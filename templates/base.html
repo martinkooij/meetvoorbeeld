@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+{% raw %}
+<script type="importmap">
+    {
+      "imports": {
+        "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+      }
+    }
+  </script>
+  
+  <script type="module">
+  import { createApp } from 'vue'
+  
+  createApp({
+   
+     data() {
+      return {
+        query: '',
+        answer: 'No Results...',
+        loading: false,
+        waiting: false,
+        count: 0,
+        columns: ['id','time_stamp', 'uname', 'command', 'result_string'],
+        info: [],
+        sortKey: 'id',
+        sortOrders: { id: -1, time_stamp: -1, uname: -1, command: -1, result_string: -1}
+      }
+    },
+  
+    watch: {
+      // whenever question changes, this function will run
+      question(newQuestion, oldQuestion) {
+        if (newQuestion.includes('?')) {
+          this.getAnswer()
+        }
+      }
+    },
+   //   question(newQuestion, oldQuestion) {
+    //    if (newQuestion.includes('?')) {
+    //      this.getAnswer()
+   //     }
+  //   }
+   //
+  methods: {
+       async getAnswer() {
+        this.loading = true
+        this.answer = 'Working...'
+        this.waiting = true
+        this.info = []
+        await new Promise(f => setTimeout(f, 2000));
+        try {
+ //       const res = await fetch('https://yesno.wtf/api')
+          const res = await fetch("http://127.0.0.1:8000/whoami")
+          this.answer = await res.json()
+        } catch (error) {
+          this.answer = 'Error! Could not reach the Server. ' + error
+        } finally {
+          this.loading = false
+          this.waiting = false
+        }
+      },
+      
+      async getCommand(cmd) {
+        this.loading = true
+        this.answer = 'Working...'
+        this.waiting = true
+        this.info = []
+        await new Promise(f => setTimeout(f, 2000));
+        try {
+ //       const res = await fetch('https://yesno.wtf/api')
+          const res = await fetch("http://127.0.0.1:8000/api/"+cmd)
+          this.answer = await res.json()
+        } catch (error) {
+          this.answer  = 'Error! Could not reach the Server. ' + error
+        } finally {
+          this.loading = false
+          this.waiting = false
+        }
+      },
+
+      async getList() {
+        this.loading = true
+        this.answer = 'Working...'
+        this.waiting = true
+        this.info = []
+        await new Promise(f => setTimeout(f, 2000));
+        try {
+ //       const res = await fetch('https://yesno.wtf/api')
+          const res = await fetch("http://127.0.0.1:8000/logentries")
+          this.info = await res.json()
+        } catch (error) {
+          this.answer  = 'Error! Could not reach the Server. ' + error
+        } finally {
+          this.loading = false
+          this.waiting = false
+          this.answer = 'Done'  
+        }
+      },
+
+      sortBy(key) {
+      this.sortKey = key
+      this.sortOrders[key] = this.sortOrders[key] * -1
+      },
+      
+      capitalize: function(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1)
+      },
+
+      sortedData: function() {
+      const sortKey = this.sortKey
+      const filterKey = this.query && this.query.toLowerCase()
+      const order = this.sortOrders[sortKey] || 1
+      let data = this.info
+      if (filterKey) {
+        data = data.filter((row) => {
+          return Object.keys(row).some((key) => {
+            return String(row[key]).toLowerCase().indexOf(filterKey) > -1
+          })
+        })
+      }
+      if (sortKey && data.length > 3 ) {
+        data = data.slice().sort((a, b) => {
+          a = a[sortKey]
+          b = b[sortKey]
+          return (a === b ? 0 : a > b ? 1 : -1) * order
+        })
+      }
+      return data
+      },
+
+      logfile() {
+        this.getList()
+      },
+
+      whoami() {
+         this.getAnswer()
+         },
+
+      execute_command(cmd) {
+         this.getCommand(cmd)
+         }
+    }
+    //  <input v-model="question" :disabled="loading" />
+  }).mount('#app')
+  
+  
+
+  </script>
+  {% endraw %}
+
+<html lang="en">
+    <link rel="icon" href="assets/rocsysfavicon.png">
+    <head>
+        <meta charset="utf-8">
+        <title>{{title}}</title>
+        <style>
+            body { font-size:18px; }
+            td { vertical-align:center; }
+            .button{
+              background-color: #3c9eff; /* Blue */
+              border: none;
+              color: white;
+              padding: 3px 3px;
+              text-align: center;
+              text-decoration: none;
+              display: inline-block;
+              font-size: 16px;
+              margin: 4px 2px;
+              cursor: pointer;
+              border-radius: 6px;
+            }
+            .buttongre {background-color: #4CAF50;} /* Green */
+            .buttonred {background-color: #f44336;} /* Red */ 
+            .buttonano {background-color: #d6d6d6; color: rgb(69, 69, 69);} /* Gray */ 
+            .buttonblk {background-color: #555555;} /* Black */
+            .buttonlbl {background-color: #a4f2ef; color: black;} /* Light Blue */
+            .buttonbig {padding: 10px 15px;}
+            .loadingbox {
+                height: 150px;
+                width: 300px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background: #FFFFFF;
+            }
+            .wave {
+                width: 5px;
+                height: 100px;
+                background: linear-gradient(45deg, cyan, #000);
+                margin: 10px;
+                animation: wave 1s linear infinite;
+                border-radius: 20px;
+            }
+            .wave:nth-child(2) {animation-delay: 0.1s;}
+            .wave:nth-child(3) {animation-delay: 0.2s;}
+            .wave:nth-child(4) {animation-delay: 0.3s;}
+            .wave:nth-child(5) {animation-delay: 0.4s;}
+            .wave:nth-child(6) {animation-delay: 0.5s;}
+            .wave:nth-child(7) {animation-delay: 0.6s;}
+            .wave:nth-child(8) {animation-delay: 0.7s;}
+            .wave:nth-child(9) {animation-delay: 0.8s;}
+            .wave:nth-child(10) {animation-delay: 0.9s;}
+         
+@keyframes wave {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0);
+  }
+}
+
+body {
+    font-family: Helvetica Neue, Arial, sans-serif;
+    font-size: 18px;
+    color: #000;
+  }
+
+  table.log {
+    border: 2px solid #153b61;
+    border-radius: 3px;
+    background-color: #fff;
+    font-size: 14px;
+    color: #444;
+/*    width: 90%;
+    table-layout: fixed; */
+  }
+
+  th.log {
+    background-color: #3c9dff;
+    color: rgba(255, 255, 255, 0.66);
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  td.log {
+    background-color: #f9f9f9;
+  }
+
+  th,
+  td {
+    min-width: 120px;
+    padding: 10px 20px;
+/*    white-space: nowrap;                
+    overflow: hidden;              
+    -o-text-overflow: ellipsis;    
+    text-overflow:    ellipsis; 
+    */
+  }
+
+  th.active {
+    color: #fff;
+  }
+
+  th.active .arrow {
+    opacity: 1;
+  }
+
+  .arrow {
+    display: inline-block;
+    vertical-align: middle;
+    width: 0;
+    height: 0;
+    margin-left: 5px;
+    opacity: 0.66;
+  }
+
+  .arrow.asc {
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 4px solid #fff;
+  }
+
+  .arrow.dsc {
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid #fff;
+  }
+
+
+        </style>
+    </head>
+    <body>
+            <table style="width:100%">
+            <tr>
+                <td>
+                    <img src="/assets/rocsyslogo.png" alt="Rocsys Logo" height="40" padding="4px">
+                </td>
+                <td>Welcome <i>{{uname}}</i> on <i>{{rocname}}</i></td>
+                <td style="float:right;">
+                <button class="button buttonlbl" onclick="window.location.href='/'">
+                    Home
+                </button>
+			    <button
+                {% if uname == "Anonymous" %}
+                    class="button buttonlbl" 
+                {% else %}
+                    class = "button buttonano"
+                {% endif %}
+                    onclick="window.location.href='/login'">
+                    Login
+                </button>
+                <button class="button buttonlbl" onclick="window.location.href='/register'">
+                    Register
+                </button>
+                <button
+                {% if uname == "Anonymous" %}
+                    class="button buttonano" 
+                {% else %}
+                    class = "button buttonlbl"
+                {% endif %}
+                    onclick="window.location.href='/changeroc'">
+                    Select ROC
+                </button>
+                <button class="button buttonlbl" onclick="window.location.href='/changeroc'">
+                    Register
+                </button>
+				<button 
+                {% if uname == "Anonymous" %}
+                    class="button buttonano" 
+                {% else %}
+                    class = "button buttonlbl"
+                {% endif %}       
+                    onclick="window.location.href='/logout'">
+                   Logout
+                </button>
+                </td>
+            </tr>
+            </table>
+
+        <hr>
+        <table style="width:100%">
+        <tr>
+            <td><b>Martin's Control Panel</b></td>
+        </tr>
+        </table>
+        <hr>
+        {% block content %}
+        {% endblock %}
+        <hr>
+        
+        <div id="app">
+            <p>
+            <button 
+            {% if uname == "Anonymous" %}
+                class="button buttonano buttonbig" 
+            {% else %}
+                class = "button buttonbig"
+            {% endif %}   
+                  @click="execute_command('dock')">
+                Dock
+            </button>
+            <button 
+            {% if uname == "Anonymous" %}
+                class="button buttonano buttonbig" 
+            {% else %}
+                class = "button buttonbig"
+            {% endif %}              
+                @click="execute_command('release')">
+               Release to Op
+            </button>
+            <button 
+            {% if uname == "Anonymous" %}
+                class="button buttonano buttonbig" 
+            {% else %}
+                class = "button buttonbig"
+            {% endif %}              
+                @click="execute_command('disable')">
+               Disable from Op
+            </button>
+            <button 
+            {% if uname == "Anonymous" %}
+                class="button buttonano buttonbig" 
+            {% else %}
+                class = "button buttonbig"
+            {% endif %}              
+                @click="execute_command('recover')">
+               Recover
+            </button>
+            <button 
+            {% if uname == "Anonymous" %}
+                class="button buttonano buttonbig" 
+            {% else %}
+                class = "button buttonbig"
+            {% endif %}              
+                @click="execute_command('undock')">
+               Undock
+            </button>
+            <button
+            {% if uname == "Anonymous" %}
+                class="button buttonano buttonbig" 
+            {% else %}
+                class = "button buttonbig"
+            {% endif %}  
+                @click="execute_command('abort')">
+                Abort
+            </button>
+            <button 
+            {% if uname == "Anonymous" %}
+                class="button buttonano buttonbig" 
+            {% else %}
+                class = "button buttonbig"
+            {% endif %}      
+            @click="execute_command('movetostored')">
+                Move to Stored
+            </button>
+            <button 
+            {% if uname == "Anonymous" %}
+                class="button buttonano buttonbig" 
+            {% else %}
+                class = "button buttonbig"
+            {% endif %}      
+                @click="execute_command('getstate')">
+                Get State
+            </button>
+            <button @click="whoami" class="button buttonbig">Who am I</button>
+            <button 
+            {% if uname == "Anonymous" %}
+                class="button buttonano buttonbig" 
+            {% else %}
+                class = "button buttonbig"
+            {% endif %}   
+                @click="logfile">
+                Audit History (1 Week)
+            </button>
+
+      </p>
+        {% raw %}
+        <table v-if = "waiting">
+            <tr>
+           <td>
+            <div class="loadingbox">
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+            </div>
+            </td>
+            <td>
+            <div class="loadingbox">
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+            </div>
+            </td></tr>
+        </table>
+            <p>
+                RESULT: {{ answer }}
+            </p>
+          </br>
+            <form v-if="info.length" id="search">Search and Select<input name="query" v-model="query" /></form>
+          </br>
+            <table v-if ="info.length" class="log">
+              <thead>
+                <tr>
+                  <th class="log"
+                    v-for="key in columns"
+                    @click="sortBy(key)"
+                    :class="{ active: sortKey == key }"
+                  >
+                    {{ capitalize(key) }}
+                    <span class="arrow" :class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
+                    </span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="entry in sortedData()">
+                  <td v-for="key in columns" class="log">{{entry[key]}}</td>
+                </tr>
+              </tbody>
+            </table>
+
+          </div>
+
+
+
+        {% endraw %}
+    </body>
+</html>
