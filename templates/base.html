@@ -7,6 +7,9 @@
       }
     }
   </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gauge.js/1.3.5/gauge.min.js"></script>
+
   
   <script type="module">
   import { createApp } from 'vue'
@@ -39,106 +42,53 @@
   //   }
    //
   methods: {
-       async getAnswer() {
+       async getTemp() {
         this.loading = true
-        this.answer = 'Working...'
+        this.answer_temp = 'Working...'
         this.waiting = true
         this.info = []
         await new Promise(f => setTimeout(f, 2000));
         try {
  //       const res = await fetch('https://yesno.wtf/api')
-          const res = await fetch("http://127.0.0.1:8000/whoami")
-          this.answer = await res.json()
+          const res = await fetch("http://127.0.0.1:8000/gettemperature")
+          this.answer_temp = await res.json()
         } catch (error) {
-          this.answer = 'Error! Could not reach the Server. ' + error
-        } finally {
-          this.loading = false
-          this.waiting = false
-        }
-      },
-      
-      async getCommand(cmd) {
-        this.loading = true
-        this.answer = 'Working...'
-        this.waiting = true
-        this.info = []
-        await new Promise(f => setTimeout(f, 2000));
-        try {
- //       const res = await fetch('https://yesno.wtf/api')
-          const res = await fetch("http://127.0.0.1:8000/api/"+cmd)
-          this.answer = await res.json()
-        } catch (error) {
-          this.answer  = 'Error! Could not reach the Server. ' + error
+          this.answer_temp= 'Error! Could not reach the Server. ' + error
         } finally {
           this.loading = false
           this.waiting = false
         }
       },
 
-      async getList() {
+      async getHum() {
         this.loading = true
-        this.answer = 'Working...'
+        this.answer_hum = 'Working...'
         this.waiting = true
         this.info = []
         await new Promise(f => setTimeout(f, 2000));
         try {
  //       const res = await fetch('https://yesno.wtf/api')
-          const res = await fetch("http://127.0.0.1:8000/logentries")
-          this.info = await res.json()
+          const res = await fetch("http://127.0.0.1:8000/gethumidity")
+          this.answer_hum = await res.json()
         } catch (error) {
-          this.answer  = 'Error! Could not reach the Server. ' + error
+          this.answer_hum= 'Error! Could not reach the Server. ' + error
         } finally {
           this.loading = false
           this.waiting = false
-          this.answer = 'Done'  
         }
       },
 
-      sortBy(key) {
-      this.sortKey = key
-      this.sortOrders[key] = this.sortOrders[key] * -1
-      },
-      
-      capitalize: function(str) {
-        return str.charAt(0).toUpperCase() + str.slice(1)
-      },
+      execute_hum() {
+         this.getHum()
+    },
 
-      sortedData: function() {
-      const sortKey = this.sortKey
-      const filterKey = this.query && this.query.toLowerCase()
-      const order = this.sortOrders[sortKey] || 1
-      let data = this.info
-      if (filterKey) {
-        data = data.filter((row) => {
-          return Object.keys(row).some((key) => {
-            return String(row[key]).toLowerCase().indexOf(filterKey) > -1
-          })
-        })
-      }
-      if (sortKey && data.length > 3 ) {
-        data = data.slice().sort((a, b) => {
-          a = a[sortKey]
-          b = b[sortKey]
-          return (a === b ? 0 : a > b ? 1 : -1) * order
-        })
-      }
-      return data
-      },
-
-      logfile() {
-        this.getList()
-      },
-
-      whoami() {
-         this.getAnswer()
-         },
-
-      execute_command(cmd) {
-         this.getCommand(cmd)
+    
+    execute_temp() {
+         this.getTemp()
          }
-    }
+
     //  <input v-model="question" :disabled="loading" />
-  }).mount('#app')
+  }}).mount('#app')
   
   
 
@@ -289,45 +239,13 @@ body {
                 <td>
                     <img src="/assets/rocsyslogo.png" alt="Rocsys Logo" height="40" padding="4px">
                 </td>
-                <td>Welcome <i>{{uname}}</i> on <i>{{rocname}}</i></td>
+                <td>Welcome <i>{{title}}</i></td>
                 <td style="float:right;">
                 <button class="button buttonlbl" onclick="window.location.href='/'">
                     Home
                 </button>
-			    <button
-                {% if uname == "Anonymous" %}
-                    class="button buttonlbl" 
-                {% else %}
-                    class = "button buttonano"
-                {% endif %}
-                    onclick="window.location.href='/login'">
-                    Login
-                </button>
-                <button class="button buttonlbl" onclick="window.location.href='/register'">
-                    Register
-                </button>
-                <button
-                {% if uname == "Anonymous" %}
-                    class="button buttonano" 
-                {% else %}
-                    class = "button buttonlbl"
-                {% endif %}
-                    onclick="window.location.href='/changeroc'">
-                    Select ROC
-                </button>
-                <button class="button buttonlbl" onclick="window.location.href='/changeroc'">
-                    Register
-                </button>
-				<button 
-                {% if uname == "Anonymous" %}
-                    class="button buttonano" 
-                {% else %}
-                    class = "button buttonlbl"
-                {% endif %}       
-                    onclick="window.location.href='/logout'">
-                   Logout
-                </button>
                 </td>
+
             </tr>
             </table>
 
@@ -341,93 +259,27 @@ body {
         {% block content %}
         {% endblock %}
         <hr>
+
+
         
         <div id="app">
-            <p>
-            <button 
-            {% if uname == "Anonymous" %}
-                class="button buttonano buttonbig" 
-            {% else %}
-                class = "button buttonbig"
-            {% endif %}   
-                  @click="execute_command('dock')">
-                Dock
-            </button>
-            <button 
-            {% if uname == "Anonymous" %}
-                class="button buttonano buttonbig" 
-            {% else %}
-                class = "button buttonbig"
-            {% endif %}              
-                @click="execute_command('release')">
-               Release to Op
-            </button>
-            <button 
-            {% if uname == "Anonymous" %}
-                class="button buttonano buttonbig" 
-            {% else %}
-                class = "button buttonbig"
-            {% endif %}              
-                @click="execute_command('disable')">
-               Disable from Op
-            </button>
-            <button 
-            {% if uname == "Anonymous" %}
-                class="button buttonano buttonbig" 
-            {% else %}
-                class = "button buttonbig"
-            {% endif %}              
-                @click="execute_command('recover')">
-               Recover
-            </button>
-            <button 
-            {% if uname == "Anonymous" %}
-                class="button buttonano buttonbig" 
-            {% else %}
-                class = "button buttonbig"
-            {% endif %}              
-                @click="execute_command('undock')">
-               Undock
-            </button>
-            <button
-            {% if uname == "Anonymous" %}
-                class="button buttonano buttonbig" 
-            {% else %}
-                class = "button buttonbig"
-            {% endif %}  
-                @click="execute_command('abort')">
-                Abort
-            </button>
-            <button 
-            {% if uname == "Anonymous" %}
-                class="button buttonano buttonbig" 
-            {% else %}
-                class = "button buttonbig"
-            {% endif %}      
-            @click="execute_command('movetostored')">
-                Move to Stored
-            </button>
-            <button 
-            {% if uname == "Anonymous" %}
-                class="button buttonano buttonbig" 
-            {% else %}
-                class = "button buttonbig"
-            {% endif %}      
-                @click="execute_command('getstate')">
-                Get State
-            </button>
-            <button @click="whoami" class="button buttonbig">Who am I</button>
-            <button 
-            {% if uname == "Anonymous" %}
-                class="button buttonano buttonbig" 
-            {% else %}
-                class = "button buttonbig"
-            {% endif %}   
-                @click="logfile">
-                Audit History (1 Week)
-            </button>
-
-      </p>
+          <table style="width:100%">
+            <tr>
+          <td style="float:right;">
+                <button class="button buttonlbl"  
+                @click="execute_temp()" >
+                    Temp
+                </button>
+                </td>
+                <td style="float:right;">
+                <button class="button buttonlbl"
+                   @click="execute_hum()" >
+                    Hum
+                </button>
+                </td>
+                </tr>
+                </table>
+            
         {% raw %}
         <table v-if = "waiting">
             <tr>
@@ -461,34 +313,17 @@ body {
             </td></tr>
         </table>
             <p>
-                RESULT: {{ answer }}
+                READING TEMP: {{answer_temp}}
+                READING_HUM : {{answer_hum}}%
             </p>
-          </br>
-            <form v-if="info.length" id="search">Search and Select<input name="query" v-model="query" /></form>
-          </br>
-            <table v-if ="info.length" class="log">
-              <thead>
-                <tr>
-                  <th class="log"
-                    v-for="key in columns"
-                    @click="sortBy(key)"
-                    :class="{ active: sortKey == key }"
-                  >
-                    {{ capitalize(key) }}
-                    <span class="arrow" :class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
-                    </span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="entry in sortedData()">
-                  <td v-for="key in columns" class="log">{{entry[key]}}</td>
-                </tr>
-              </tbody>
-            </table>
+            execute_hum() 
 
-          </div>
+            <div class="chart">
+              <canvas id="gauge"></canvas>
+            </div>
+            <script src="assets/main.js"></script>
 
+            </div>
 
 
         {% endraw %}
