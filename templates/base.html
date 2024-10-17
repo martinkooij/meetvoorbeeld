@@ -16,25 +16,22 @@
      data() {
       return {
         query: '',
-        answer: 'No Results...',
+        answer_temp: 'No Temperature Results...',
+        answer_hum: "No Humidity Results",
         loading: false,
         waiting: false,
-        count: 0,
-        columns: ['id','time_stamp', 'uname', 'command', 'result_string'],
-        info: [],
-        sortKey: 'id',
-        sortOrders: { id: -1, time_stamp: -1, uname: -1, command: -1, result_string: -1}
+        
       }
     },
   
     watch: {
       // whenever question changes, this function will run
-      question(newQuestion, oldQuestion) {
-        if (newQuestion.includes('?')) {
-          this.getAnswer()
-        }
-      }
-    },
+     // question(newQuestion, oldQuestion) {
+      //  if (newQuestion.includes('?')) {
+      //    this.getAnswer()
+     //   }
+     // }
+   },
    //   question(newQuestion, oldQuestion) {
     //    if (newQuestion.includes('?')) {
     //      this.getAnswer()
